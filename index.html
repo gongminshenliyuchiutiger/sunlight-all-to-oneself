@@ -1,0 +1,877 @@
+<!DOCTYPE html>
+<html lang="zh-TW" data-theme="paper" data-font="serif">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>《專屬的日光》｜全本電子書</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;600;900&family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --font-serif: 'Noto Serif TC', 'Songti TC', 'Source Han Serif TC', serif;
+      --font-sans: 'Noto Sans TC', 'PingFang TC', 'Microsoft JhengHei', sans-serif;
+      --font-mono: 'SF Pro Mono', 'Menlo', 'Monaco', monospace;
+      --base-font-size: 19px;
+      --line-height: 1.95;
+    }
+
+    /* Themes */
+    [data-theme="paper"] {
+      --bg-color: #FAF8F5;
+      --card-bg: #FFFFFF;
+      --text-main: #242424;
+      --text-muted: #6B655F;
+      --border-color: #E8E2D9;
+      --accent-color: #8C2D19; /* 印泥硃砂紅 */
+      --accent-soft: rgba(140, 45, 25, 0.08);
+      --quote-border: #8C2D19;
+      --toolbar-bg: rgba(250, 248, 245, 0.92);
+      --shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+    }
+
+    [data-theme="sepia"] {
+      --bg-color: #F4ECD8;
+      --card-bg: #EAE0C8;
+      --text-main: #3C3022;
+      --text-muted: #746350;
+      --border-color: #DCCFB7;
+      --accent-color: #7A3E20;
+      --accent-soft: rgba(122, 62, 32, 0.1);
+      --quote-border: #7A3E20;
+      --toolbar-bg: rgba(244, 236, 216, 0.92);
+      --shadow: 0 4px 20px rgba(60, 48, 34, 0.08);
+    }
+
+    [data-theme="dark"] {
+      --bg-color: #161719;
+      --card-bg: #202226;
+      --text-main: #DDD8D0;
+      --text-muted: #8E8A82;
+      --border-color: #2F333A;
+      --accent-color: #E06C53;
+      --accent-soft: rgba(224, 108, 83, 0.15);
+      --quote-border: #E06C53;
+      --toolbar-bg: rgba(22, 23, 25, 0.92);
+      --shadow: 0 4px 25px rgba(0, 0, 0, 0.4);
+    }
+
+    [data-font="serif"] body { font-family: var(--font-serif); }
+    [data-font="sans"] body { font-family: var(--font-sans); }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      font-size: var(--base-font-size);
+      line-height: var(--line-height);
+      transition: background-color 0.3s ease, color 0.3s ease;
+      text-rendering: optimizeLegibility;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Reading Progress Bar */
+    #progress-container {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 3px;
+      background: transparent;
+      z-index: 1000;
+    }
+    #progress-bar {
+      height: 100%;
+      width: 0%;
+      background: var(--accent-color);
+      transition: width 0.1s ease-out;
+    }
+
+    /* Fixed Control Bar */
+    header.book-nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 58px;
+      background: var(--toolbar-bg);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 1.5rem;
+      z-index: 990;
+      font-family: var(--font-sans);
+    }
+
+    .nav-title {
+      font-size: 0.95rem;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .btn {
+      background: transparent;
+      border: 1px solid var(--border-color);
+      color: var(--text-main);
+      border-radius: 6px;
+      padding: 0.35rem 0.65rem;
+      font-size: 0.85rem;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s ease;
+      font-family: var(--font-sans);
+    }
+
+    .btn:hover {
+      background: var(--accent-soft);
+      border-color: var(--accent-color);
+      color: var(--accent-color);
+    }
+
+    /* Reading Container */
+    .reader-wrapper {
+      max-width: 760px;
+      margin: 0 auto;
+      padding: 100px 1.5rem 120px;
+    }
+
+    /* Cover Page */
+    .book-cover {
+      text-align: center;
+      padding: 4rem 1rem 5rem;
+      border-bottom: 1px solid var(--border-color);
+      margin-bottom: 4rem;
+    }
+
+    .book-tag {
+      font-family: var(--font-sans);
+      display: inline-block;
+      font-size: 0.8rem;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: var(--accent-color);
+      background: var(--accent-soft);
+      padding: 0.35rem 0.85rem;
+      border-radius: 50px;
+      margin-bottom: 1.5rem;
+      font-weight: 600;
+    }
+
+    .book-title {
+      font-size: 2.8rem;
+      font-weight: 900;
+      letter-spacing: 0.08em;
+      margin-bottom: 1rem;
+      line-height: 1.25;
+      color: var(--text-main);
+    }
+
+    .book-subtitle {
+      font-size: 1.15rem;
+      font-weight: 300;
+      color: var(--text-muted);
+      margin-bottom: 2.5rem;
+      letter-spacing: 0.05em;
+      font-family: var(--font-sans);
+    }
+
+    .book-meta {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      display: flex;
+      justify-content: center;
+      gap: 1.5rem;
+      font-family: var(--font-sans);
+    }
+
+    /* Chapter Styling */
+    article.chapter {
+      margin-bottom: 5.5rem;
+    }
+
+    .chapter-header {
+      margin-bottom: 2.5rem;
+      padding-bottom: 1.2rem;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .chapter-number {
+      font-family: var(--font-sans);
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--accent-color);
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      margin-bottom: 0.4rem;
+    }
+
+    .chapter-title {
+      font-size: 1.85rem;
+      font-weight: 800;
+      line-height: 1.35;
+      letter-spacing: 0.03em;
+    }
+
+    /* Paragraph Formatting */
+    p {
+      margin-bottom: 1.6rem;
+      text-align: justify;
+      text-indent: 2em;
+    }
+
+    p.no-indent {
+      text-indent: 0;
+    }
+
+    /* Dialogues & Callouts */
+    .chat-block {
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-left: 4px solid var(--accent-color);
+      padding: 1.2rem 1.4rem;
+      margin: 1.8rem 0;
+      border-radius: 8px;
+      font-size: 0.95em;
+      box-shadow: var(--shadow);
+    }
+
+    .chat-block p {
+      margin-bottom: 0.6rem;
+      text-indent: 0;
+    }
+    .chat-block p:last-child { margin-bottom: 0; }
+
+    .chat-speaker {
+      font-weight: 700;
+      color: var(--accent-color);
+      font-family: var(--font-sans);
+      font-size: 0.85em;
+      margin-bottom: 0.2rem;
+    }
+
+    /* Legal Demand Box (Tailored for Civil Law climax) */
+    .legal-notice {
+      background: var(--card-bg);
+      border: 2px solid var(--accent-color);
+      border-radius: 10px;
+      padding: 2rem 1.8rem;
+      margin: 2.5rem 0;
+      box-shadow: var(--shadow);
+      position: relative;
+    }
+
+    .legal-notice::before {
+      content: "LEGAL NOTICE / 債催通告";
+      position: absolute;
+      top: -12px;
+      right: 20px;
+      background: var(--accent-color);
+      color: #FFF;
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      font-weight: 700;
+      padding: 0.15rem 0.6rem;
+      border-radius: 4px;
+      letter-spacing: 0.1em;
+    }
+
+    .legal-notice p {
+      text-indent: 0;
+      margin-bottom: 1rem;
+      font-size: 0.96em;
+    }
+
+    .legal-notice ol {
+      margin: 1rem 0 1.2rem 1.4rem;
+      font-size: 0.96em;
+    }
+
+    .legal-notice li {
+      margin-bottom: 0.5rem;
+    }
+
+    /* Stat Sheet / Financial breakdown */
+    .stat-sheet {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 1rem;
+      margin: 2rem 0;
+      font-family: var(--font-sans);
+    }
+
+    .stat-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 1rem;
+      text-align: center;
+    }
+
+    .stat-label {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      margin-bottom: 0.3rem;
+    }
+
+    .stat-value {
+      font-size: 1.35rem;
+      font-weight: 700;
+      color: var(--accent-color);
+    }
+
+    /* Sidebar Drawer (Table of Contents) */
+    .toc-drawer {
+      position: fixed;
+      top: 0;
+      left: -320px;
+      width: 300px;
+      height: 100%;
+      background: var(--card-bg);
+      border-right: 1px solid var(--border-color);
+      z-index: 1001;
+      transition: left 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      display: flex;
+      flex-direction: column;
+      box-shadow: 4px 0 25px rgba(0, 0, 0, 0.15);
+      font-family: var(--font-sans);
+    }
+
+    .toc-drawer.open {
+      left: 0;
+    }
+
+    .toc-header {
+      padding: 1.2rem 1.5rem;
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .toc-header h3 {
+      font-size: 1.05rem;
+      font-weight: 700;
+    }
+
+    .toc-list {
+      list-style: none;
+      overflow-y: auto;
+      padding: 1rem 0;
+      flex: 1;
+    }
+
+    .toc-list li a {
+      display: block;
+      padding: 0.75rem 1.5rem;
+      color: var(--text-main);
+      text-decoration: none;
+      font-size: 0.9rem;
+      transition: background 0.2s, color 0.2s;
+    }
+
+    .toc-list li a:hover {
+      background: var(--accent-soft);
+      color: var(--accent-color);
+    }
+
+    .toc-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0, 0, 0, 0.45);
+      backdrop-filter: blur(2px);
+      z-index: 1000;
+      display: none;
+    }
+
+    .toc-overlay.open {
+      display: block;
+    }
+
+    /* Footer */
+    footer.colophon {
+      text-align: center;
+      padding: 4rem 1rem 2rem;
+      border-top: 1px solid var(--border-color);
+      color: var(--text-muted);
+      font-size: 0.85rem;
+      font-family: var(--font-sans);
+    }
+
+    /* Mobile Adaptations */
+    @media (max-width: 600px) {
+      :root {
+        --base-font-size: 17.5px;
+        --line-height: 1.9;
+      }
+      .book-title { font-size: 2.1rem; }
+      .reader-wrapper { padding-top: 80px; }
+      .nav-title { font-size: 0.85rem; }
+      .btn span { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Reading Progress Bar -->
+  <div id="progress-container"><div id="progress-bar"></div></div>
+
+  <!-- Navigation Toolbar -->
+  <header class="book-nav">
+    <div class="nav-title">
+      <button class="btn" id="btn-toc" title="目錄">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+        &nbsp;目錄
+      </button>
+      <span style="opacity: 0.5;">|</span>
+      <span>專屬的日光</span>
+    </div>
+
+    <div class="nav-actions">
+      <!-- Font Family Toggle -->
+      <button class="btn" id="btn-font" title="切換字型">
+        <span id="font-name">宋體</span>
+      </button>
+
+      <!-- Font Size Controls -->
+      <button class="btn" id="btn-font-dec" title="縮小字體">A-</button>
+      <button class="btn" id="btn-font-inc" title="放大字體">A+</button>
+
+      <!-- Theme Switcher -->
+      <button class="btn" id="btn-theme" title="切換主題">
+        <span id="theme-name">紙本</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Sidebar Table of Contents -->
+  <div class="toc-overlay" id="toc-overlay"></div>
+  <aside class="toc-drawer" id="toc-drawer">
+    <div class="toc-header">
+      <h3>目錄</h3>
+      <button class="btn" id="btn-close-toc">✕</button>
+    </div>
+    <ul class="toc-list">
+      <li><a href="#cover">封面 / 扉頁</a></li>
+      <li><a href="#prologue">序幕：階梯教室裡的違約金</a></li>
+      <li><a href="#chapter-1">第一章：二〇一三，螢幕那端的氧氣罩</a></li>
+      <li><a href="#chapter-2">第二章：安全屋裡的秘密與退守的邊界</a></li>
+      <li><a href="#chapter-3">第三章：平行線上的十一年供奉</a></li>
+      <li><a href="#chapter-4">第四章：二〇二五，科技菁英的血腥泥淖</a></li>
+      <li><a href="#chapter-5">第五章：法學教授的自白與跨年夜的恥辱</a></li>
+      <li><a href="#chapter-6">第六章：一堂代價六十萬的民法課</a></li>
+      <li><a href="#epilogue">尾聲：帝王條款的終局審判</a></li>
+      <li><a href="#colophon">版權與後記</a></li>
+    </ul>
+  </aside>
+
+  <!-- Reader Content Wrapper -->
+  <main class="reader-wrapper">
+
+    <!-- Cover Section -->
+    <section class="book-cover" id="cover">
+      <span class="book-tag">高張力法理與人性小說</span>
+      <h1 class="book-title">專屬的日光</h1>
+      <p class="book-subtitle">當最高法理遇上十三年精緻算計：一位民法教授的終局清算</p>
+      <div class="book-meta">
+        <span>字數約 9,500 字</span>
+        <span>•</span>
+        <span>完整全本</span>
+        <span>•</span>
+        <span>民法專題典藏版</span>
+      </div>
+    </section>
+
+    <!-- Prologue -->
+    <article class="chapter" id="prologue">
+      <div class="chapter-header">
+        <div class="chapter-number">PROLOGUE</div>
+        <h2 class="chapter-title">序幕：階梯教室裡的違約金</h2>
+      </div>
+      <p>十月中旬的午後，國立臺灣第一學府法學院階梯教室裡，座無虛席。</p>
+      <p>林雨晴站在講臺前，身著剪裁俐落的霧灰套裝，黑板上用粉筆勾勒著複雜的法律關係圖。兩百雙充滿求知慾的年輕眼睛盯著她。她是這所頂尖法學院最年輕的民法專任教授，專攻契約法與現代債權體系，以思維如手術刀般精準、冷靜而著稱。</p>
+      <p>「民法第二百一十九條，行使權利、履行義務，應依誠實及信用方法。」雨晴的嗓音透過微型麥克風傳遞，清澈、沉著，帶著不容置疑的學術威嚴，「記住，『誠信原則』被稱為私法領域的最高帝王條款。但為什麼需要帝王條款？因為人類在面對利益時，最先背棄的，永遠是誠實。」</p>
+      <p>下課鐘聲震碎了課堂的靜謐。學生們如潮水般湧出，雨晴關掉麥克風，走回位於五樓的研究室。</p>
+      <p>她鎖上門，將外界的喧囂徹底隔絕。</p>
+      <p>辦公桌正中央，端正擺放著兩份剛印好的文件——《消費借貸清償協議書》與兩張面額總計六十萬元的商業《本票》。</p>
+      <p>她拉開鋼筆筆蓋，在「債權人」欄位簽下了林雨晴三個字，紅印泥落在紙面上，豔烈如乾涸的血。接著，她在本票的「發票人」欄位貼上螢光標籤，附上一行冷峻的附註：<em>依票據法第一百二十條，請發票人親簽並按捺指印。如屆期未兌現，逕依票據法第一百二十三條聲請法院裁定強制執行。</em></p>
+      <p>做完這一切，她拿起一張黃色便利貼，照著通訊軟體裡最後那段令人作嘔的求饒，抄下了收件資訊：<strong>科學園區光電科技大樓五樓，海外商業開發處，程向遠副理收。</strong></p>
+      <p>「寄到我公司吧……括號寫部門就好，求妳千萬對我就好，不要給第三人……」那是程向遠一小時前在電話裡，帶著哭腔與恐懼吐出的妥協。</p>
+      <p>竹科的大樓收發極為嚴密，雙掛號信必須由總務處拆驗登錄、蓋上收發大章才能轉交本人。程向遠最在乎他在外商與科技圈「體面、菁英、無懈可擊」的光環。這封信一到，整間辦公室都會知道他被一位法學教授逼著簽本票。</p>
+      <p>雨晴將文件塞進厚磅牛皮紙袋，用膠水封死。</p>
+      <p>她的手極度穩定，心跳平靜得近乎殘酷。只有在轉身時，辦公桌書架上那張夾在厚重《德國民法釋義》裡的泛黃明信片，悄然劃破了她的視線。那是十三年前，程向遠第一次代表公司去加州出差時寄回來的，筆跡飛揚跳脫：「祝學妹研究順利，早日拿到教職，一切順心。」</p>
+      <p>整整十三年。</p>
+      <p>從那個在資訊與法政跨領域實驗室裡、因為寫不出數據分析模型而崩潰大哭的碩一生；到如今手握民法利刃、親手將昔日最崇拜的學長推進法律絕境的大學教授。</p>
+      <p>她沒有流一滴眼淚。這世界上最諷刺的莫過於：她教了半輩子如何辨識詐欺與防範風險，卻在同一個人身上，把所有的法律武裝卸得一乾二淨，由著他凌遲了十三年。</p>
+    </article>
+
+    <!-- Chapter 1 -->
+    <article class="chapter" id="chapter-1">
+      <div class="chapter-header">
+        <div class="chapter-number">CHAPTER 01</div>
+        <h2 class="chapter-title">第一章：二〇一三，螢幕那端的氧氣罩</h2>
+      </div>
+      <p>十三年前的那個初夏，是雨晴人生最灰暗的斷層。</p>
+      <p>那時她剛考上頂尖大學的跨領域法政研究所，研究題目是尖端的「數位演算法與契約自動化」。指導教授是出了名的權威暴君，對統計學與演算法邏輯的要求苛刻到了變態的地步。第一次期中專題報告前夕，雨晴自己寫的模擬系統出現了無法排除的邏輯死結（Deadlock），數據跑了整夜，顯著性全部歸零。</p>
+      <p>凌晨兩點，在陰暗悶熱的電腦教室裡，二十出頭的林雨晴把臉埋在雙膝間，哭得肩膀劇烈顫抖。</p>
+      <p>就在這時，螢幕右下角的通訊軟體跳出一個好友邀請：「您好，我是程向遠，想將您新增到聯絡人名單。」</p>
+      <p>程向遠。這個名字在整個資訊與理工大樓是傳奇般的存在。他比雨晴大兩屆，是教授口中「百年難得一見的邏輯鬼才」，一畢業就被外商高薪挖走，擔任專案架構師。</p>
+      <p>雨晴像溺水的人抓住了浮木，顫抖著敲下鍵盤：「學長好！不好意思這麼晚打擾您……」</p>
+      <p>「不好意思先問一下，剛才是不是有人在實驗室裡哭到當機？」程向遠的文字帶著科技男特有的鬆弛感與痞氣，「我聽同門說妳被老頭電慘了。檔案丟過來，我幫妳抓蟲（Debug）。」</p>
+      <p>那一晚，程向遠在螢幕另一端，將複雜的布林代數與演算法架構拆解得如行雲流水。他不只幫她重寫了核心邏輯，甚至連隔天面對教授質疑時該如何攻防、該把哪些圖表藏在附錄的心理戰術，都條分縷析地交代清楚。</p>
+      <p>「別怕，老頭最愛虛張聲勢，明天照我教的講，保證他挑不出毛病。」凌晨四點，他在視窗裡敲下：「好了，技術底層我替妳撐著，快去睡回籠覺吧，未來的大教授。」</p>
+      <p>隨後的一整年，程向遠成了林雨晴貧瘠求學生涯中的「氧氣罩」。</p>
+      <p>他工作極度繁忙，卻總在深夜上線陪她。第一個月，兩人的對話紀錄就突破了萬則，程向遠的發言量幾乎是她的兩倍。他才華橫溢、幽默風趣，能把死板的程式碼講成浪漫的哲學：</p>
+      
+      <div class="chat-block">
+        <p class="chat-speaker">程向遠</p>
+        <p>「學妹回實驗室了嗎？哪時要約會啊？妳怎都偷隱藏上線，害我都要玩捉迷藏。」</p>
+        <p class="chat-speaker">林雨晴</p>
+        <p>「我在備份資料啦，我怕我的小老婆被偷走！」</p>
+        <p class="chat-speaker">程向遠</p>
+        <p>「小老婆是誰？」</p>
+        <p class="chat-speaker">林雨晴</p>
+        <p>「我的筆電。」</p>
+        <p class="chat-speaker">程向遠</p>
+        <p>「那大老婆是誰？」</p>
+        <p class="chat-speaker">林雨晴</p>
+        <p>「桌電。」</p>
+        <p class="chat-speaker">程向遠</p>
+        <p>「……法學院女生的幽默感果然很符合邏輯。」</p>
+      </div>
+
+      <p>在那個被論文、學術發表與未來焦慮撕扯的青春歲月裡，程向遠就像一道無所不能的日光。他隨口一句「放心，技術上我會支援妳」，就能讓她安心好幾天。</p>
+      <p>在林雨晴眼中，這個男人聰明、強大、耀眼，是一座永遠不會崩塌的燈塔。</p>
+    </article>
+
+    <!-- Chapter 2 -->
+    <article class="chapter" id="chapter-2">
+      <div class="chapter-header">
+        <div class="chapter-number">CHAPTER 02</div>
+        <h2 class="chapter-title">第二章：安全屋裡的秘密與退守的邊界</h2>
+      </div>
+      <p>二〇一三年深秋的一個雨夜，他們的關係越過了師兄妹的界線，走進了一座幽微的情感安全屋。</p>
+      <p>那天雨晴的狀態極差，在螢幕前發呆了整整一小時。程向遠敏銳地敲她：「學妹，今天怎麼了？感覺魂不在。是模型又跑不出來？還是……感情？」</p>
+      <p>雨晴的手指在鍵盤上懸空了很久，最後打出一行字：「為什麼會哭，當然是因為失戀啊……」</p>
+      <p>那是她藏在心底最深、最恥辱的傷口。對方是她從小學就認識的青梅竹馬，曖昧數年，卻在出國留學前夕以一句輕蔑的「我們生活圈差太多」將她拋棄。那陣子，實驗室同學私下傳閱著一張「失戀打氣卡」，她覺得自己像個當街被扒光衣服的丑角，在學院裡連頭都抬不起來。</p>
+      <p>「真丟臉……跟學長說了一堆秘密。」雨晴打字，「這件事我沒跟任何人說過細節，深怕別人覺得我很可悲。」</p>
+      <p>程向遠沒有發出任何調侃的符號，他回覆了一段漫長而極其溫柔的文字：</p>
+      <p>「一點也不丟臉。放心，我很 safe 的。誰沒在感情裡當過傻子？我也被甩過啊。大一跟同班女生告白被當場拒絕，失戀後耍廢到被指導教授痛罵『你這種人成不了大器』……人生嘛，受過傷才知道防禦機制怎麼寫。只是為學妹感到不捨，妳這麼優秀，人生才剛要展開呢。」</p>
+      <p>那晚，兩個隔著螢幕的靈魂，交換了彼此最狼狽的底牌。</p>
+      <p>雨晴在心底發誓：這個男人看穿了她的不堪，接住了她的眼淚，是這世界上極少數值得她交付無條件信任的人。</p>
+      <p>然而，這座安全屋很快落下一道冰冷的鐵閘。</p>
+      <p>十一月初，當雨晴隨口問起他週末回不回老家時，程向遠極自然地回了一句：「回宿舍吧，有時會直接在我女友那過夜，她最近在會計師事務所忙季，吃完飯太晚我就不跑回去了。」</p>
+      <p>女友。</p>
+      <p>螢幕前的林雨晴，大腦在零點一秒內完成了法理上的「關係定性」與「邊界劃分」。</p>
+      <p>她心臟猛地一縮，隨即迅速啟動了頂尖學者的自控防衛機制。她打出一串客氣甚至帶著微酸的文字：「恩恩，原來是這樣！學長你最近工作這麼忙，還要幫我看程式，會不會讓女友困擾啊？如果真的不行，學長可以把我託付給別人……最近覺得自己好像一隻四處被棄養的流浪狗，哈哈。」</p>
+      <p>程向遠立刻回覆：「我又沒說我不幫，不用託付給別人。妳的事我一定管到底。」</p>
+      <p>那晚關上電腦後，林雨晴在筆記本的扉頁寫下了一條鐵律：<strong>終止所有浪漫投射。</strong></p>
+      <p>她自尊心高於一切，絕不允許自己成為任何感情裡的潛在第三者。於是，她將這份暗湧的情愫，以最高規格的道德自律死死封存，轉化為一種近乎信仰的「純粹同門情誼」。</p>
+    </article>
+
+    <!-- Chapter 3 -->
+    <article class="chapter" id="chapter-3">
+      <div class="chapter-header">
+        <div class="chapter-number">CHAPTER 03</div>
+        <h2 class="chapter-title">第三章：平行線上的十一年供奉</h2>
+      </div>
+      <p>此後的十一年，兩人的軌跡如同精密的平行線。</p>
+      <p>雨晴一路攻讀博士，赴美擔任訪問學者，三十出頭便以驚人的研究產量拿下了國立大學的教席，成為法學界冉冉升起的明星學者；程向遠則在竹科幾家跨國科技巨頭間跳槽，憑著出色的外語與交際手腕，坐上了外商光電大廠的海外商業開發處副理。</p>
+      <p>他們維持著一種極具默契與質感的微溫距離。</p>
+      <p>雨晴的情感世界長年冰封。程向遠曾熱心地要替她介紹竹科年薪數百萬的單身高階工程師，她總是一口回絕：「免了，工程師的腦袋我有你一個對照組就夠頭痛了。」</p>
+      <p>程向遠每次海外出差，總不忘給她寄明信片；二〇一七年他趕著飛加州，特地清晨排隊買了當季最難買的限量法式甜點，寄到她研究室附近的超商，訊息裡寫著：「一盒給老頭，裡面多塞了兩盒私房點心，是特地請妳吃的，出門急沒買什麼好的，學妹趁新鮮吃。」</p>
+      <p>每逢四月他生日，雨晴的祝福訊息必定在零點準時抵達；九月教師節，兩人永遠合資送禮給老教授；雨晴參與跨國人工智慧法規制定時，還會發訊向他請教底層算力的硬體成本結構。</p>
+      <p>在長達十一年的時光裡，程向遠被林雨晴安放在心中最乾淨的聖殿裡。</p>
+      <p>他不是情人，但他是她青春時代的救贖者，是一座象徵著「純粹善意」的圖騰。雨晴甚至私下認為，這世界上所有人都可能算計她、背叛她，但程向遠絕不會。</p>
+    </article>
+
+    <!-- Chapter 4 -->
+    <article class="chapter" id="chapter-4">
+      <div class="chapter-header">
+        <div class="chapter-number">CHAPTER 04</div>
+        <h2 class="chapter-title">第四章：二〇二五，科技菁英的血腥泥淖</h2>
+      </div>
+      <p>然而，這座圖騰在二〇二五年轟然崩塌。</p>
+      <p>那年農曆春節，程向遠罕見地已讀不回。直到二月下旬，他才在深夜傳來一段令人震驚的長文，首度揭露了他的家族黑洞：「十幾年前家裡長輩幫人作保，對方破產自殺，上千萬的連帶保證債務全砸在我們家……這些年我年薪兩百多萬，全是替家裡在填坑。」</p>
+      <p>身為民法學者，雨晴深知連帶保證在臺灣舊法時代製造了多少人間悲劇。她滿心心疼，當時還以專業角度安慰他：「只要沒有落入地下錢莊，按照合法途徑協商，總能看到盡頭的。」</p>
+      <p>但真正的深淵，在二〇二五年十月三日將她拖入地獄。</p>
+      <p>那是個週五早晨，雨晴在法學院有一整天的碩博士論文指導審查。上午九點半，程向遠發來了數百字滿溢著血腥與絕望的求救信：</p>
+      <p>「學妹……我走投無路了。年前講的債務，之前有前同事借了我五十萬度過難關。但我那個前同事前陣子太太癌症過世、他自己又被裁員，精神徹底崩潰，這幾天帶著黑衣人直接鬧到我們公司的大廳、主管跟 HR 那裡……我已經整整一週無法進辦公室了。如果今天拿不出錢，他揚言要讓我身敗名裂、丟掉工作。我前天甚至站在公司頂樓，往下看的時候被自己嚇醒……如果學妹手邊能動用，能不能借我應急？還款時間完全照妳的條件，最後我一定會給妳5%利息補償……求求妳救救我這一次……」</p>
+      <p>看著「黑衣人鬧到人資」、「一週無法上班」、「站在頂樓往下看」這些字眼，坐在法學院休息室裡的林雨晴，心臟幾乎停止跳動。</p>
+      <p>她的大腦一片空白。那個曾經意氣風發、在螢幕前替她擋下全世界風雨的大師兄，現在正站在粉身碎骨的懸崖邊。</p>
+      <p><strong>身為民法專家的職業防禦本能，在那一瞬間被十三年的崇拜與同理心徹底瓦解。</strong></p>
+      <p>「學長，帳號給我，我下課後立刻處理。」</p>
+      <p>那天傍晚，雨晴坐在高鐵上，指尖冰冷地登入各大網銀。三十萬對大學教授來說不是小數字，那是她維持生活運轉的活存預備金。為了在三小時內湊齊，她強行解除了尚未到期的大額定存，甘願承受銀行利息的折損。週日清晨，三十萬全額入帳。</p>
+      <p>程向遠在訊息裡痛哭流涕：「學妹……這三十萬真的是救命毫毛，我當下真的跪在地上磕頭感謝老天……」</p>
+      <p>然而，食髓知味的寄生蟲，永遠沒有飽足的一天。</p>
+      <p>不到二十四小時，週一凌晨，程向遠再度發難。他說前同事堅持連本帶利清償，否則不撤銷檢舉，同時銀行的信用貸款與高額卡債當天下午即將法扣，「學妹，缺口還有三十萬……我痛苦到想撞牆，我真的沒臉再開口，但如果今天過不去，我前面借的三十萬也是白搭，我真的會萬劫不復……」</p>
+      <p>雨晴感到一陣天旋地轉。法學理智告訴她：這是典型的連環債務陷阱。</p>
+      <p>她急著說：「學長，你把對方的聯絡方式給我，我以民法教授和律師的身分陪你去談，他帶人鬧事已經構成刑法強制罪與恐嚇取財！再不行，我們找系上幾位科技界的大律師學長一起組協商團！」</p>
+      <p>但程向遠一聽到「法律」、「律師」、「同門」，爆發出瀕臨癲狂的恐懼：「不要！求求妳千萬不要找學校任何人！也不要報警！科技業圈子很小，傳出去我的職業生涯就徹底死了！求妳不要逼死我！」</p>
+      <p>他用「死」做籌碼，將雨晴所有的專業武器硬生生繳械。</p>
+      <p>週二開盤，林雨晴坐在研究室裡，閉上雙眼，點開證券戶。她將自己長期持有、原本預期領息養老的幾檔績優科技股，在市場震盪的波段低點，<strong>以市價單無情地「割肉拋售」</strong>。</p>
+      <p>變現二十六萬，加上戶頭湊出的四萬。</p>
+      <p><strong>整整六十萬。</strong></p>
+      <p>短短四天內，林雨晴掏空了自己的活期、定期與核心資產，把自己多年嚴格自律積攢下的安全感，毫無保留地推進了程向遠的黑洞。</p>
+    </article>
+
+    <!-- Chapter 5 -->
+    <article class="chapter" id="chapter-5">
+      <div class="chapter-header">
+        <div class="chapter-number">CHAPTER 05</div>
+        <h2 class="chapter-title">第五章：法學教授的自白與跨年夜的恥辱</h2>
+      </div>
+      <p>錢借出去後，換來的不是解脫，而是無休止的精神凌遲。</p>
+      <p>十月中旬，程向遠又開始在訊息裡試探：「學妹，這幾天生活費有點緊，能不能再擠個兩萬塊？我算了一下，下個月開始我每個月還妳三千……」</p>
+      <p>看著那套荒謬的「每個月還三千」公式，再看著自己帳戶被清空的數字，以及股市隨後迎來報復性大漲、自己平白蒸發了近四十萬潛在獲利的殘酷現實，林雨晴在十月十六日的深夜，爆發了人生第一次歇斯底里。</p>
+      <p>她坐在地板上，對著螢幕敲下了她這十三年來，對程向遠說過最赤裸、最痛苦的一段話：</p>
+
+      <div class="chat-block">
+        <p class="chat-speaker">林雨晴的深夜長訊</p>
+        <p>「程向遠，既然你保證了心臟很大顆、不會跳樓，那我有些話想老實跟你說。</p>
+        <p>身為民法學者，我經手過上百起債務糾紛，我比誰都清楚借錢給一個陷入流動性危機的人有多危險。但我當初為什麼借？最前面的三十萬是我違約解定存換來的；後面的三十萬是我在波段最低點割肉賣掉核心持股換來的——那是我的養老底氣，後來股市暴漲，我實質損失了幾十萬，我一個字都沒對你提，就是怕給你心理壓力！</p>
+        <p>在金錢上、在情緒價值上，我都已經給到我的極限，因為我是真的在乎你，我把你當成自己最親的家人！</p>
+        <p>學長，你可能完全誤會了我的為人。我在法學院教書，我看透了人性最骯髒的計算，我從來就不是什麼善良、單純、溫柔無害的女人——我只是在『程向遠』面前，暫時假裝成那個樣子而已。</p>
+        <p>當初借錢是我的選擇，因為我想對你好。但現在的我，受傷到連半點情緒價值都給不出來了。我覺得自己極度可悲、極度不值。我的生活全在為你的債務失眠，但你的訊息卻讓我看清，你只把我當成一個無止境的抽水幫浦……」</p>
+      </div>
+
+      <p>那是一場沒有說出「愛」字的終極告白。</p>
+      <p>一個享譽學界的法學教授，在他面前卸下了所有防禦、冠冕與法學武裝，將血淋淋的靈魂剖開給他看。</p>
+      <p>那一晚，程向遠慌了。他發來長達數分鐘的語音，聲音沙啞崩潰：「學妹，對不起……我這幾年被債務逼成了一個麻木的機器人，我忽略了妳的感受……不要放棄我，不要生我的氣，好嗎？」</p>
+      <p>聽著語音裡那個疲憊無助的聲音，雨晴的心又軟了。</p>
+      <p>她甚至在兩個月後的跨年夜（十二月三十一日），犯下了這輩子最不可思議的荒唐——那天晚上，程向遠傳訊說薪資戶被法院扣押，連跨年夜吃一頓熱飯、繳最低信用卡費的錢都沒有。</p>
+      <p>全臺灣都在倒數跨年、窗外煙火絢爛的那一刻，林雨晴看著自己僅剩兩萬多塊的戶頭，硬是轉出了兩萬，甚至放下面子，私下向法學院一位年輕助理教授借了一萬元，湊齊三萬匯給了程向遠。</p>
+      <p>「下週請務必把這一萬還我，因為這是我向系上同事借的……」雨晴在跨年夜的訊息裡近乎哀求，「不要拿去還給別人，因為我也是在極限狀態下替你張羅的……」</p>
+      <p>那一刻，民法教授的尊嚴，徹底碎成了滿地齏粉。</p>
+    </article>
+
+    <!-- Chapter 6 -->
+    <article class="chapter" id="chapter-6">
+      <div class="chapter-header">
+        <div class="chapter-number">CHAPTER 06</div>
+        <h2 class="chapter-title">第六章：一堂代價六十萬的民法課</h2>
+      </div>
+      <p>進入二〇二六年，荒謬劇走向了高潮。</p>
+      <p>跨年夜借的那三萬元，程向遠拖拖拉拉直到二月中旬才勉強還清。至於那筆承諾在農曆春節、三月、九月分期歸還的六十萬本金，卻在無聲無息中一次次跳票。</p>
+      <p>三月，他說父親肺癌末期住院；六月，他說父親病逝在加護病房。</p>
+      <p>出於人倫常情與十三年的情誼，雨晴選擇了閉嘴。身為法學學者，她甚至壓制住了發放存證信函的職業衝動，在對方的喪期給予了最大程度的體諒與尊嚴。</p>
+      <p>然而，這份體諒，最終換來的是二〇二六年十月十四日的致命羞辱。</p>
+      <p>借款整整滿一週年的這天，程向遠主動傳來了一份「還款規劃書」。雨晴原以為他終於重整旗鼓，沒想到螢幕上跳出的文字，將她整個人推進了絕對的寒冬：</p>
+      <p>「學妹……想跟妳求情。因為我目前的債務結構，這六十萬本金，我想每半年攤還五萬、用六年的時間慢慢還清給妳。」</p>
+      <p>「另外，不管是前面六十萬，或者後面請妳幫忙時，妳可以看到我的訊息只有寫『最後會給利息5%』，我的意思是指『這六年的總利息就是5%』。借錢是我的錯，但我絕對沒說過是『年利率5%』。」</p>
+      <p>「今年沒還款是因為家逢巨變……給我一點時間，我一個月內先匯給妳這筆總利息三萬塊，過年前再還五萬本金……是否能先不要簽任何借據或本票？」</p>
+      <p>坐在法學院研究室裡的林雨晴，盯著螢幕上的這幾行字，全身的血液在瞬間凝結成冰。</p>
+      <p><strong>總利息 5%？六十萬壓在他那裡六年，總共只給三萬塊利息？</strong></p>
+      <p>身為頂尖民法學者的精密理性，在這一瞬間，如核爆般全面復甦。</p>
+
+      <!-- Stat Sheet Card -->
+      <div class="stat-sheet">
+        <div class="stat-card">
+          <div class="stat-label">借款總額本金</div>
+          <div class="stat-value">NT$ 600,000</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">對方主張總利息 (5%)</div>
+          <div class="stat-value">NT$ 30,000</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">攤還期程</div>
+          <div class="stat-value">整整 6 年</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">實質內部報酬率 (IRR)</div>
+          <div class="stat-value">1.54%</div>
+        </div>
+      </div>
+
+      <p>雨晴發出了一聲極度荒涼、極度冰冷的低笑。</p>
+      <p>目前的央行重貼現率與各大公股銀行一年期定存利率，早已站穩 1.7% 以上；民法第二百零五條的法定最高約定利率上限是 16%；他在外面的銀行信貸利率至少 8% 到 12%，民間借貸更是按月計息。</p>
+      <p><strong>而他，對待這個在關鍵時刻救了他一命、割肉賣股承擔數十萬損失的學妹，提出的條件，竟然是年利率 1.54%。</strong></p>
+      <p>比把錢扔在毫無風險的國泰世華銀行定存還要低。</p>
+      <p>更毒辣的是程向遠那句「能不能先不要簽借據或本票」。</p>
+      <p>身為法學家，雨晴瞬間看穿了他那卑劣而精明的小算盤：</p>
+      <p>他不簽借據，是為了防止未來在聯徵中心留下紀錄；他不簽本票，是為了阻斷她依票據法第一百二十三條「聲請本票裁定強制執行」的最速路徑；而那句文字遊戲「總利息 5% 不是年利率 5%」，更是在替未來六年後的賴帳預埋伏筆——六年後，等本金拖拖拉拉還得差不多時，他只要擺出一副「大家同門一場，最後這三萬塊利息零頭妳就別計較了吧」的無賴嘴臉，這筆債務就徹底被他無息白嫖。</p>
+      <p>甚至在隨後的通話中，程向遠還在糾結：「對了，去年底那筆活動代墊的六千塊，我真的沒注意到妳有沒有轉入……」</p>
+      <p>對大筆債務避重就輕、極盡賴皮之能事；對幾千塊的蠅頭小利斤斤計較、錙銖必較。</p>
+      <p>這不是還不起錢。這不是困境。</p>
+      <p>這是赤裸裸的欺凌、算計，以及仗著對方對自己的感情，肆無忌憚地進行道德敲詐。</p>
+      <p>那一刻，林雨晴心中那個耀眼了十三年的日光少年，徹底死透了。</p>
+      <p>死得乾乾淨淨，連墓碑都不剩。</p>
+      <p>取而代之的，是一個在債務泥淖裡浸泡多年、道德敗壞、精通情緒操弄的金融寄生蟲。他把她當成全天下最廉價、最安全、最不需要付出代價的提款機。</p>
+    </article>
+
+    <!-- Epilogue -->
+    <article class="chapter" id="epilogue">
+      <div class="chapter-header">
+        <div class="chapter-number">EPILOGUE</div>
+        <h2 class="chapter-title">尾聲：帝王條款的終局審判</h2>
+      </div>
+      <p>林雨晴緩緩站起身，走到窗邊。</p>
+      <p>窗外是法學院綠意盎然的中庭，風吹過落羽松，發出沙沙的聲響。她眼底最後一絲屬於少女林雨晴的溫度，在這一刻徹底熄滅。</p>
+      <p>她走回書桌前，十指在鍵盤上飛速敲擊。這一次，不再是求救與心碎的學妹，而是身經百戰、冷酷無情的民法巨擘。一段長達千字的法律分析長文，化作最致命的彈雨，直接砸進了程向遠的視窗：</p>
+
+      <!-- The Legal Notice Box -->
+      <div class="legal-notice">
+        <p><strong>程向遠先生：</strong></p>
+        <p>第一，關於你主張的『總利息5%』。依民法第九十八條，解釋意思表示，應探求當事人之真意，不得拘泥於所用之辭句。依商業金融常理與消費借貸之交易習慣，未特別載明者，利率皆以『年利率（p.a.）』計之。</p>
+        <p>第二，依你提議之『六十萬分六年攤還、總利息三萬』方案，經精確年化內部報酬率（IRR）折算，實質年利率僅 1.54%。目前臺灣各大公股銀行一年期定期存款利率為 1.725%。你轉嫁給我的風險溢酬為負值。你在外面信貸利率高達雙位數，民間借貸按月計息，你向我借款，等於將應支付予金融機構的利息成本惡意轉嫁由我承擔，同時將完全倒帳的信用風險全數拋擲於我。這不是借貸，這是在法律與經濟層面上，對人際信任的惡意掠奪。</p>
+        <p>第三，你於二〇二五年十月承諾之還款期程已全面違約，構成民法第二百二十九條之給付遲延，依法應自遲延日起加計法定遲延利息（民法第二百三十三條）。</p>
+        <p>第四，勿忘我的本業是什麼。身為民法教授，我過去十三年對你退讓，是出於對同門的情誼；但你今天踩穿了民法第二百一十九條的誠信原則底線。</p>
+        <p><strong>我的條件只有兩個：</strong></p>
+        <ol>
+          <li>簽署我擬定之《消費借貸協議書》（載明違約金條款及強制執行約款），並簽發足額之見票即付《本票》兩張，依規定按捺指印寄回。</li>
+          <li>若無法接受，請立即向其他金融機構轉貸，於一週內全額清償六十萬本金與法定遲延利息。</li>
+        </ol>
+        <p>若以上兩者皆不履行，我將在下週一解除所有保密默契，委任律師直接向新竹地方法院提出支付命令聲請，並依法對你任職之公司進行薪資假扣押，同時向系所同門及指導教授如實通報本案始末。</p>
+        <p style="margin-bottom: 0;"><strong>你只有四十八小時考慮。</strong></p>
+      </div>
+
+      <p>螢幕那一頭，陷入了死一般的沉寂。</p>
+      <p>三分鐘後，程向遠的手機語音通話瘋狂跳出。一次、兩次、三次。</p>
+      <p>雨晴面無表情地連續按下掛斷。</p>
+      <p>緊接著是程向遠語無倫次的文字轟炸：</p>
+      <p>「學妹！一定要這樣嗎？妳把話講得這麼絕？！」<br>
+      「妳是法律教授，妳不能用專業壓人啊！妳股票賠錢不能全怪我頭上吧？！這一年我沒有消失，我父親過世我很慘妳知道嗎？！」<br>
+      「可不可以通電話？求求妳接電話！」</p>
+      <p>雨晴的手指在鍵盤上敲下最後的判詞：</p>
+      <p>「我不跟無誠信之人通話。不用再提你父親，那不是你踐踏別人善意的擋箭牌。契約寄到你公司了。新竹科學園區光電大樓五樓，商業開發處。寄的是雙掛號，公司總收發會蓋大章登錄。請在收到後二十四小時內簽妥、按印寄回。</p>
+      <p>沒有人一開始就想黑化。<br>
+      但程向遠，你親手把一個願意為你傾家蕩產的學妹，調教成了一個冷血的債權人。」</p>
+      <p>發送完畢，雨晴按下手機設定，將他的通訊帳號設定為「訊息靜音並封存」。</p>
+      <p>她拿起桌上那份沉甸甸的牛皮紙袋，關上研究室的燈。</p>
+      <p>走出法學院大樓時，校園裡正迎著深秋的微雨。涼風捲起她風衣的下擺，雨晴步履沉穩，穿過成群討論著法條與判例的學生，穿過那座象徵著法理神聖的紅磚長廊，走進了郵局。</p>
+      <p>「您好，雙掛號，附回執。」</p>
+      <p>她將信封推進櫃檯。</p>
+      <p>郵務人員手起槌落，金屬郵戳重重砸在信封上，發出一聲清脆、決絕的「碰！」。</p>
+      <p>那一聲悶響，為她長達十三年的盲目、崇拜、眼淚與自我感動，降下了最後的法槌。</p>
+      <p>走出郵局，雨停了。秋日微涼的陽光穿透雲層，灑在濕漉漉的柏油路上，折射出冰冷而耀眼的光芒。</p>
+      <p>林雨晴抬起頭，迎著陽光大步前行。</p>
+      <p>這一次，她不再需要任何人的施捨與照耀。<br>
+      <strong>她自己，就是最高法理，就是永不墜落的日光。</strong></p>
+    </article>
+
+    <!-- Colophon / Footer -->
+    <footer class="colophon" id="colophon">
+      <p style="text-indent: 0; margin-bottom: 0.5rem;">《專屬的日光》• 全文完</p>
+      <p style="text-indent: 0; font-size: 0.8rem; opacity: 0.7;">
+        法律知識點：民法第 98 條（意思表示之解釋）、第 205 條（最高約定利率）、第 219 條（誠實信用原則）、第 229 條（給付遲延）、票據法第 123 條（本票裁定）
+      </p>
+    </footer>
+
+  </main>
+
+  <!-- Reader JavaScript Interactions -->
+  <script>
+    // 1. Reading Progress Bar
+    window.addEventListener('scroll', () => {
+      const winScroll = document.documentElement.scrollTop || document.body.scrollTop;
+      const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+      const scrolled = (winScroll / height) * 100;
+      document.getElementById('progress-bar').style.width = scrolled + '%';
+    });
+
+    // 2. TOC Drawer
+    const btnToc = document.getElementById('btn-toc');
+    const btnCloseToc = document.getElementById('btn-close-toc');
+    const tocDrawer = document.getElementById('toc-drawer');
+    const tocOverlay = document.getElementById('toc-overlay');
+
+    function openToc() {
+      tocDrawer.classList.add('open');
+      tocOverlay.classList.add('open');
+    }
+    function closeToc() {
+      tocDrawer.classList.remove('open');
+      tocOverlay.classList.remove('open');
+    }
+
+    btnToc.addEventListener('click', openToc);
+    btnCloseToc.addEventListener('click', closeToc);
+    tocOverlay.addEventListener('click', closeToc);
+
+    document.querySelectorAll('.toc-list a').forEach(link => {
+      link.addEventListener('click', closeToc);
+    });
+
+    // 3. Theme Toggle (Paper -> Sepia -> Dark -> Paper)
+    const themes = ['paper', 'sepia', 'dark'];
+    const themeNames = { 'paper': '紙本', 'sepia': '羊皮', 'dark': '暗夜' };
+    const btnTheme = document.getElementById('btn-theme');
+    const themeNameLabel = document.getElementById('theme-name');
+
+    btnTheme.addEventListener('click', () => {
+      const currentTheme = document.documentElement.getAttribute('data-theme') || 'paper';
+      const nextIndex = (themes.indexOf(currentTheme) + 1) % themes.length;
+      const nextTheme = themes[nextIndex];
+      document.documentElement.setAttribute('data-theme', nextTheme);
+      themeNameLabel.textContent = themeNames[nextTheme];
+      localStorage.setItem('book-theme', nextTheme);
+    });
+
+    // 4. Font Toggle (Serif vs Sans)
+    const btnFont = document.getElementById('btn-font');
+    const fontNameLabel = document.getElementById('font-name');
+
+    btnFont.addEventListener('click', () => {
+      const currentFont = document.documentElement.getAttribute('data-font') || 'serif';
+      const nextFont = currentFont === 'serif' ? 'sans' : 'serif';
+      document.documentElement.setAttribute('data-font', nextFont);
+      fontNameLabel.textContent = nextFont === 'serif' ? '宋體' : '黑體';
+      localStorage.setItem('book-font', nextFont);
+    });
+
+    // 5. Font Size Control
+    let currentFontSize = 19;
+    const btnFontInc = document.getElementById('btn-font-inc');
+    const btnFontDec = document.getElementById('btn-font-dec');
+
+    btnFontInc.addEventListener('click', () => {
+      if (currentFontSize < 26) {
+        currentFontSize += 1.5;
+        document.documentElement.style.setProperty('--base-font-size', currentFontSize + 'px');
+      }
+    });
+
+    btnFontDec.addEventListener('click', () => {
+      if (currentFontSize > 15) {
+        currentFontSize -= 1.5;
+        document.documentElement.style.setProperty('--base-font-size', currentFontSize + 'px');
+      }
+    });
+
+    // 6. Restore Settings on Load
+    window.addEventListener('DOMContentLoaded', () => {
+      const savedTheme = localStorage.getItem('book-theme');
+      if (savedTheme && themes.includes(savedTheme)) {
+        document.documentElement.setAttribute('data-theme', savedTheme);
+        themeNameLabel.textContent = themeNames[savedTheme];
+      }
+
+      const savedFont = localStorage.getItem('book-font');
+      if (savedFont && ['serif', 'sans'].includes(savedFont)) {
+        document.documentElement.setAttribute('data-font', savedFont);
+        fontNameLabel.textContent = savedFont === 'serif' ? '宋體' : '黑體';
+      }
+    });
+  </script>
+</body>
+</html>
