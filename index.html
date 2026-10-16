@@ -428,6 +428,93 @@
       .nav-title { font-size: 0.85rem; }
       .btn span { display: none; }
     }
+
+    /* Floating Draggable Mascot */
+    .chill-mascot {
+      position: fixed;
+      left: 24px;
+      bottom: 24px;
+      width: 95px;
+      height: auto;
+      z-index: 9999;
+      cursor: grab;
+      user-select: none;
+      -webkit-user-drag: none;
+      touch-action: none;
+      transition: filter 0.25s ease, transform 0.15s ease;
+      filter: drop-shadow(0 6px 14px rgba(0, 0, 0, 0.25));
+    }
+
+    .chill-mascot.dragging {
+      cursor: grabbing;
+      transition: none;
+      animation: none !important;
+      filter: drop-shadow(0 12px 26px rgba(0, 0, 0, 0.35)) scale(1.05);
+    }
+
+    .chill-mascot img {
+      width: 100%;
+      height: auto;
+      display: block;
+      pointer-events: none;
+      user-select: none;
+      -webkit-user-drag: none;
+    }
+
+    /* 懸停霓虹彩色發光與抖動 */
+    .chill-mascot:hover:not(.dragging) {
+      animation: neon-rainbow-glow 2s linear infinite, mascot-jitter 0.16s infinite ease-in-out;
+    }
+
+    @keyframes neon-rainbow-glow {
+      0% {
+        filter: drop-shadow(0 0 8px #ff0055) drop-shadow(0 0 16px #ff0077) drop-shadow(0 0 28px #ff00aa);
+      }
+      20% {
+        filter: drop-shadow(0 0 8px #ff7700) drop-shadow(0 0 16px #ffaa00) drop-shadow(0 0 28px #ffea00);
+      }
+      40% {
+        filter: drop-shadow(0 0 8px #00ff66) drop-shadow(0 0 16px #00ffbb) drop-shadow(0 0 28px #00ffff);
+      }
+      60% {
+        filter: drop-shadow(0 0 8px #00aaff) drop-shadow(0 0 16px #0044ff) drop-shadow(0 0 28px #7700ff);
+      }
+      80% {
+        filter: drop-shadow(0 0 8px #cc00ff) drop-shadow(0 0 16px #ff00cc) drop-shadow(0 0 28px #ff0066);
+      }
+      100% {
+        filter: drop-shadow(0 0 8px #ff0055) drop-shadow(0 0 16px #ff0077) drop-shadow(0 0 28px #ff00aa);
+      }
+    }
+
+    @keyframes mascot-jitter {
+      0% {
+        transform: translate(0, 0) rotate(0deg) scale(1.05);
+      }
+      20% {
+        transform: translate(-3px, 2px) rotate(-3deg) scale(1.05);
+      }
+      40% {
+        transform: translate(3px, -2px) rotate(3deg) scale(1.05);
+      }
+      60% {
+        transform: translate(-2px, -3px) rotate(-2deg) scale(1.05);
+      }
+      80% {
+        transform: translate(2px, 3px) rotate(2deg) scale(1.05);
+      }
+      100% {
+        transform: translate(0, 0) rotate(0deg) scale(1.05);
+      }
+    }
+
+    @media (max-width: 600px) {
+      .chill-mascot {
+        width: 75px;
+        left: 16px;
+        bottom: 16px;
+      }
+    }
   </style>
 </head>
 <body>
@@ -775,7 +862,15 @@
       <p style="text-indent: 0; font-size: 0.8rem; opacity: 0.7;">
         法律知識點：民法第 98 條（意思表示之解釋）、第 205 條（最高約定利率）、第 219 條（誠實信用原則）、第 229 條（給付遲延）、票據法第 123 條（本票裁定）
       </p>
+      <p style="text-indent: 0; margin-top: 1.25rem; font-size: 0.88rem; opacity: 0.85; letter-spacing: 0.04em;">
+        Copyright © Liyuchiutiger Gongminshen
+      </p>
     </footer>
+
+  <!-- 可移動吉祥物 Mascot -->
+  <div id="chill-guy-mascot" class="chill-mascot" title="可自由拖曳移動吉祥物">
+    <img src="image/LiyuChillGuy.svg" alt="吉祥物 LiyuChillGuy" draggable="false" />
+  </div>
 
   </main>
 
@@ -872,6 +967,107 @@
         fontNameLabel.textContent = savedFont === 'serif' ? '宋體' : '黑體';
       }
     });
+
+    // 7. 吉祥物可任意拖曳移動邏輯
+    const mascot = document.getElementById('chill-guy-mascot');
+    if (mascot) {
+      let isDragging = false;
+      let startX = 0;
+      let startY = 0;
+      let initialLeft = 0;
+      let initialTop = 0;
+
+      // 限制在視窗可視範圍內
+      function clamp(val, min, max) {
+        return Math.max(min, Math.min(max, val));
+      }
+
+      function onPointerDown(e) {
+        // 僅允許滑鼠左鍵或觸控事件
+        if (e.type === 'mousedown' && e.button !== 0) return;
+
+        isDragging = true;
+        mascot.classList.add('dragging');
+
+        const rect = mascot.getBoundingClientRect();
+        initialLeft = rect.left;
+        initialTop = rect.top;
+
+        // 將定位由 bottom/left 轉換為絕對像素 top/left，防止跳動
+        mascot.style.bottom = 'auto';
+        mascot.style.right = 'auto';
+        mascot.style.left = `${initialLeft}px`;
+        mascot.style.top = `${initialTop}px`;
+
+        const clientX = e.clientX ?? (e.touches && e.touches[0].clientX);
+        const clientY = e.clientY ?? (e.touches && e.touches[0].clientY);
+
+        startX = clientX;
+        startY = clientY;
+
+        if (e.type === 'touchstart') {
+          window.addEventListener('touchmove', onPointerMove, { passive: false });
+          window.addEventListener('touchend', onPointerUp);
+          window.addEventListener('touchcancel', onPointerUp);
+        } else {
+          window.addEventListener('mousemove', onPointerMove);
+          window.addEventListener('mouseup', onPointerUp);
+        }
+      }
+
+      function onPointerMove(e) {
+        if (!isDragging) return;
+        if (e.cancelable && e.type === 'touchmove') {
+          e.preventDefault(); // 觸控拖曳時防止網頁跟著捲動
+        }
+
+        const clientX = e.clientX ?? (e.touches && e.touches[0].clientX);
+        const clientY = e.clientY ?? (e.touches && e.touches[0].clientY);
+
+        const deltaX = clientX - startX;
+        const deltaY = clientY - startY;
+
+        const mascotWidth = mascot.offsetWidth;
+        const mascotHeight = mascot.offsetHeight;
+        const maxLeft = Math.max(0, window.innerWidth - mascotWidth);
+        const maxTop = Math.max(0, window.innerHeight - mascotHeight);
+
+        const targetLeft = clamp(initialLeft + deltaX, 0, maxLeft);
+        const targetTop = clamp(initialTop + deltaY, 0, maxTop);
+
+        mascot.style.left = `${targetLeft}px`;
+        mascot.style.top = `${targetTop}px`;
+      }
+
+      function onPointerUp() {
+        if (!isDragging) return;
+        isDragging = false;
+        mascot.classList.remove('dragging');
+
+        window.removeEventListener('mousemove', onPointerMove);
+        window.removeEventListener('mouseup', onPointerUp);
+        window.removeEventListener('touchmove', onPointerMove);
+        window.removeEventListener('touchend', onPointerUp);
+        window.removeEventListener('touchcancel', onPointerUp);
+      }
+
+      mascot.addEventListener('mousedown', onPointerDown);
+      mascot.addEventListener('touchstart', onPointerDown, { passive: false });
+
+      // 當視窗縮放時，確保吉祥物維持在畫面內
+      window.addEventListener('resize', () => {
+        const rect = mascot.getBoundingClientRect();
+        const mascotWidth = mascot.offsetWidth;
+        const mascotHeight = mascot.offsetHeight;
+        const maxLeft = Math.max(0, window.innerWidth - mascotWidth);
+        const maxTop = Math.max(0, window.innerHeight - mascotHeight);
+
+        if (rect.left > maxLeft || rect.top > maxTop) {
+          mascot.style.left = `${clamp(rect.left, 0, maxLeft)}px`;
+          mascot.style.top = `${clamp(rect.top, 0, maxTop)}px`;
+        }
+      });
+    }
   </script>
 </body>
 </html>
